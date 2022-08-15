@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 
 import org.gestion.temps.gestiontemps.exception.TimingException;
-import org.gestion.temps.gestiontemps.model.dto.ActiviteDto;
+import org.gestion.temps.gestiontemps.model.entities.Activite;
 import org.gestion.temps.gestiontemps.service.IActivite;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,13 +24,12 @@ public class ActiviteRestController {
     private IActivite iActivite;
 
 
-    /*Sans le try ... catch l'enregistrement d'une activité réussi sur postman mais pas dans la base de données. Ici la méthode
-    'addData' a un problème*/
+
 
     @PostMapping("/saveactivity")
-    public /*ResponseEntity<Void>*/ String save(@RequestBody ActiviteDto activiteDto) throws TimingException, FileNotFoundException {
+    public String save(@RequestBody Activite acti) throws TimingException {
         try {
-            iActivite.addData(activiteDto);
+            iActivite.saveActivite(acti);
         } catch (TimingException exception) {
             return exception.getMessage();
         }
@@ -38,23 +37,43 @@ public class ActiviteRestController {
 
     }
 
-    //Ici le test sur postman ne donne pas je ne sais pas si j'ai bien écrit le service 'searchActiviteByNumberDto'
-    @GetMapping("/{numero}/findactivity")
-    public ResponseEntity<?> findByNumero(@PathVariable("numero") Integer numero) throws TimingException {
+    @GetMapping("/{id}/data")
+    public ResponseEntity<?> getActiviteById (@PathVariable("id") Long id) throws TimingException {
 
         try {
-            return ResponseEntity.ok(iActivite.searchActiviteByNumberDto(numero));
+            return ResponseEntity.ok(iActivite.getActiviteById(id));
         }catch (TimingException exception) {
             return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
         }
-        /*ActiviteDto activite = iActivite.searchActiviteByNumberDto(numero);
-        return ResponseEntity.ok(activite);*/
     }
+
 
     @GetMapping("/all")
-    public ResponseEntity<List<ActiviteDto>> getAllActivite() {
-
+    public ResponseEntity<List<Activite>> getAllActivite() {
         return ResponseEntity.ok(iActivite.listActivites());
     }
+
+
+    @GetMapping("/{id}/delete")
+    public ResponseEntity<?> deleteActivite(@PathVariable("id") Long id) throws TimingException {
+        try {
+            return ResponseEntity.ok(iActivite.getActiviteById(id));
+        } catch (TimingException exception) {
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    @GetMapping("/{activite}/search")
+    public ResponseEntity<?> getActiviteByNumero(@PathVariable("activite") Long numero) throws TimingException {
+
+        try {
+            return ResponseEntity.ok(iActivite.getActiviteByNumero(numero));
+        }catch (TimingException exception) {
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+
 
 }
